@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Practice Portal</title>
+<style>
+  :root{
+    --bg1:#fef6e4; --bg2:#e0f7fa; --card:#ffffff; --ink:#2d3142;
+    --p1:#ff6b6b; --p2:#4ecdc4; --p3:#ffd166; --p4:#7c83fd;
+    --good:#2a9d8f; --bad:#e76f51; --shadow:0 10px 30px rgba(0,0,0,.12);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:"Comic Sans MS","Trebuchet MS",Verdana,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    min-height:100vh; padding:24px;
+  }
+  .wrap{max-width:820px; margin:0 auto;}
+  h1{font-size:2.1rem; text-align:center; margin:.2em 0;}
+  h2{font-size:1.5rem; margin:.2em 0;}
+  .sub{text-align:center; opacity:.75; margin-top:0;}
+  .card{
+    background:var(--card); border-radius:22px; box-shadow:var(--shadow);
+    padding:26px; margin:18px 0;
+  }
+  .hidden{display:none !important;}
+
+  /* Login */
+  .names{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:14px;}
+  .name-btn{
+    border:none; cursor:pointer; padding:22px; border-radius:18px;
+    font-size:1.3rem; font-weight:bold; color:#fff; box-shadow:var(--shadow);
+    transition:transform .12s;
+  }
+  .name-btn:hover{transform:translateY(-4px) scale(1.03);}
+  .name-btn:nth-child(1){background:var(--p1);}
+  .name-btn:nth-child(2){background:var(--p2);}
+  .name-btn:nth-child(3){background:var(--p4);}
+  .name-btn:nth-child(4){background:#f4a261;}
+
+  /* Unit menu */
+  .units{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:14px;}
+  .unit-btn{
+    border:none; cursor:pointer; padding:26px 14px; border-radius:18px;
+    font-size:1.1rem; font-weight:bold; color:#2d3142; box-shadow:var(--shadow);
+    transition:transform .12s; position:relative;
+  }
+  .unit-btn:hover{transform:translateY(-4px) scale(1.03);}
+  .unit-btn:nth-child(1){background:#ffadad;}
+  .unit-btn:nth-child(2){background:#9bf6ff;}
+  .unit-btn:nth-child(3){background:#caffbf;}
+  .unit-btn .big{display:block; font-size:1.8rem;}
+  .done-badge{
+    position:absolute; top:8px; right:10px; font-size:.8rem; background:var(--good);
+    color:#fff; padding:3px 8px; border-radius:20px;
+  }
+
+  /* Questions */
+  .q{padding:16px 0; border-bottom:2px dashed #eee;}
+  .q:last-of-type{border-bottom:none;}
+  .q-num{font-weight:bold; color:var(--p1);}
+  .q-text{font-size:1.15rem; margin:6px 0 12px;}
+  .opts{display:flex; flex-wrap:wrap; gap:10px;}
+  .opt{
+    background:#f1f3f5; border:2px solid transparent; border-radius:14px;
+    padding:10px 16px; cursor:pointer; font-size:1rem; transition:.15s;
+  }
+  .opt:hover{background:#e9ecef;}
+  .opt.sel{border-color:var(--p4); background:#eae8ff;}
+  input.fill{
+    font-size:1.05rem; padding:10px 14px; border-radius:12px;
+    border:2px solid #ced4da; width:200px; font-family:inherit;
+  }
+  input.fill:focus{outline:none; border-color:var(--p2);}
+
+  .btn{
+    border:none; cursor:pointer; padding:16px 30px; border-radius:16px;
+    font-size:1.2rem; font-weight:bold; color:#fff; background:var(--p2);
+    box-shadow:var(--shadow); transition:transform .12s;
+  }
+  .btn:hover{transform:scale(1.04);}
+  .btn.ghost{background:#adb5bd;}
+  .topbar{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+  .pill{background:#fff; padding:8px 16px; border-radius:30px; box-shadow:var(--shadow); font-weight:bold;}
+
+  /* feedback after submit */
+  .q.correct{background:#e6f7f1;}
+  .q.wrong{background:#fdeae4;}
+  .mark{font-weight:bold;}
+  .mark.ok{color:var(--good);}
+  .mark.no{color:var(--bad);}
+  .answer-note{font-size:.95rem; opacity:.85; margin-top:6px;}
+
+  .result-score{font-size:3rem; text-align:center; margin:10px 0; color:var(--p1);}
+  .stars{font-size:2rem; text-align:center;}
+  .center{text-align:center;}
+  .status{text-align:center; margin-top:10px; font-size:.95rem;}
+  footer{text-align:center; opacity:.6; font-size:.8rem; margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <section id="login" class="card">
+    <h1>🌟 English Practice Portal 🌟</h1>
+    <p class="sub">Tap your name to start!</p>
+    <div class="names" id="nameButtons"></div>
+  </section>
+
+  <!-- UNIT MENU -->
+  <section id="menu" class="card hidden">
+    <div class="topbar">
+      <h2 id="welcome">Hi!</h2>
+      <button class="btn ghost" onclick="logout()">Switch student</button>
+    </div>
+    <p class="sub" style="text-align:left">Choose a unit to practise. ⭐ = finished</p>
+    <div class="units" id="unitButtons"></div>
+    <p class="status" id="totalLine"></p>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="card hidden">
+    <div class="topbar">
+      <h2 id="quizTitle">Unit</h2>
+      <span class="pill" id="quizWho"></span>
+    </div>
+    <div id="questions"></div>
+    <div class="center" style="margin-top:18px">
+      <button class="btn" id="submitBtn" onclick="submitQuiz()">Submit my answers ✅</button>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" class="card hidden">
+    <h2 class="center">Well done! 🎉</h2>
+    <div class="stars" id="resultStars"></div>
+    <div class="result-score" id="resultScore">0 / 0</div>
+    <p class="center" id="resultMsg"></p>
+    <p class="status" id="emailStatus"></p>
+    <div class="center" style="margin-top:14px">
+      <button class="btn ghost" onclick="reviewAnswers()">See my answers</button>
+      <button class="btn" onclick="backToMenu()">Back to units</button>
+    </div>
+  </section>
+
+  <footer>English Practice Portal • Family &amp; Friends</footer>
+</div>
+
+<script>
+/* =====================================================================
+   SETUP — EMAIL (Formspree)
+   1. Go to https://formspree.io and create a FREE account using the
+      email  tshidisodube760@gmail.com  (so results land in that inbox).
+   2. Create a new form. Copy its endpoint, e.g. https://formspree.io/f/abcdwxyz
+   3. Paste it below, replacing YOUR_FORM_ID.
+   Until you do this, scores still show on screen; they just won't email.
+   ===================================================================== */
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xpqeoepr";
+const TEACHER_EMAIL = "tshidisodube760@gmail.com";
+
+const STUDENTS = ["Yahya","Mohammed","Mehmet","Zübeyir"];
+
+/* ---- Questions. answer = accepted answer(s). For fill-ins, lowercase. ---- */
+const UNITS = {
+  1:{ title:"Unit 1 · Where are you from?",
+    questions:[
+      {type:"mc", q:'Choose the short form: "She is from Spain."',
+        options:["She's from Spain.","Shes from Spain.","She is'nt from Spain."], answer:"She's from Spain."},
+      {type:"fill", q:'Fill in: "He ____ from Japan."  (is / are)', answer:["is"]},
+      {type:"fill", q:'Fill in the question word: "____ are you from?"', answer:["where"]},
+      {type:"mc", q:'Which sentence is correct?',
+        options:["He's from Brazil.","He from Brazil.","He are from Brazil."], answer:"He's from Brazil."},
+      {type:"mc", q:'Which letters does "frog" start with?',
+        options:["fr-","cr-","sp-"], answer:"fr-"},
+      {type:"mc", q:'Which letters does "crab" start with?',
+        options:["fr-","cr-","sp-"], answer:"cr-"},
+      {type:"mc", q:'Which letters does "spoon" start with?',
+        options:["fr-","cr-","sp-"], answer:"sp-"},
+      {type:"fill", q:'Write the short form of "I am".', answer:["i'm","im"]},
+      {type:"mc", q:'In the Guess Who game, which is a question?',
+        options:["Is it a boy?","It is a boy.","A boy."], answer:"Is it a boy?"},
+      {type:"fill", q:'Fill in: "Where ____ she from?"  (is / are)', answer:["is"]}
+    ]},
+  2:{ title:"Unit 2 · Likes & Magic E",
+    questions:[
+      {type:"fill", q:'She ____ singing.  (use: like)', answer:["likes"]},
+      {type:"mc", q:'Choose the correct one: "We ____ fishing."',
+        options:["don't like","doesn't like","likes"], answer:"don't like"},
+      {type:"fill", q:'Do you like ____ soccer?  (use: play)', answer:["playing"]},
+      {type:"mc", q:'Choose the correct one: "He ____ like fishing."',
+        options:["doesn't","don't","not"], answer:"doesn't"},
+      {type:"mc", q:'Which is correct for "he"?',
+        options:["He likes swimming.","He like swimming.","He liking swimming."], answer:"He likes swimming."},
+      {type:"fill", q:'Magic E:  c + a + n + e = ?', answer:["cane"]},
+      {type:"fill", q:'Magic E:  b + i + k + e = ?', answer:["bike"]},
+      {type:"fill", q:'Magic E:  h + o + m + e = ?', answer:["home"]},
+      {type:"mc", q:'The Magic E makes the other vowel say its...',
+        options:["name","sound","letter"], answer:"name"},
+      {type:"mc", q:'True or False: when we use "doesn\'t", the "s" disappears from "likes".',
+        options:["True","False"], answer:"True"}
+    ]},
+  3:{ title:"Unit 3 · Owning, Can & Sounds",
+    questions:[
+      {type:"fill", q:'Fill in: "This is ____ coat."  (use: You)', answer:["your"]},
+      {type:"mc", q:'Which word rhymes with "Shark"?',
+        options:["Park","Pen"], answer:"Park"},
+      {type:"mc", q:'How do you ASK to use a computer yourself?',
+        options:["Can I use the computer?","Can you use the computer?"], answer:"Can I use the computer?"},
+      {type:"mc", q:'How do you ask someone ELSE to help you?',
+        options:["Can you help me, please?","Can I help me, please?"], answer:"Can you help me, please?"},
+      {type:"fill", q:'Action word: "____ the window."  (the opposite of close)', answer:["open"]},
+      {type:"fill", q:'Fill in: "Turn ____ the TV."  (opposite of off)', answer:["on"]},
+      {type:"mc", q:'Which word has the "ar" sound?',
+        options:["Car","Cat"], answer:"Car"},
+      {type:"fill", q:'Owning word for "we": "This is ____ classroom."', answer:["our"]},
+      {type:"fill", q:'Owning word for "they": "This is ____ ball."', answer:["their"]},
+      {type:"mc", q:'Finish politely: "Can you help me, ____?"',
+        options:["please","now","stop"], answer:"please"}
+    ]}
+};
+
+/* ---------------- State ---------------- */
+let current = { student:null, unit:null, answers:[], lastScore:null };
+
+function load(){
+  const nb = document.getElementById('nameButtons');
+  STUDENTS.forEach(name=>{
+    const b=document.createElement('button');
+    b.className='name-btn'; b.textContent=name;
+    b.onclick=()=>pickStudent(name);
+    nb.appendChild(b);
+  });
+}
+function store(){ return JSON.parse(localStorage.getItem('portal')||'{}'); }
+function saveStore(s){ localStorage.setItem('portal',JSON.stringify(s)); }
+
+function pickStudent(name){
+  current.student=name;
+  document.getElementById('welcome').textContent='Hi, '+name+'! 👋';
+  show('menu'); renderUnits();
+}
+function logout(){ current={student:null,unit:null,answers:[],lastScore:null}; show('login'); }
+
+function renderUnits(){
+  const ub=document.getElementById('unitButtons'); ub.innerHTML='';
+  const s=store(); const me=s[current.student]||{};
+  let total=0, max=0, doneCount=0;
+  Object.keys(UNITS).forEach(n=>{
+    const u=UNITS[n];
+    const b=document.createElement('button'); b.className='unit-btn';
+    b.innerHTML='<span class="big">'+n+'</span>'+u.title.split('·')[1];
+    if(me[n]!==undefined){
+      const badge=document.createElement('span'); badge.className='done-badge';
+      badge.textContent='⭐ '+me[n]+'/'+u.questions.length;
+      b.appendChild(badge);
+      total+=me[n]; max+=u.questions.length; doneCount++;
+    }
+    b.onclick=()=>startUnit(n);
+    ub.appendChild(b);
+  });
+  const tl=document.getElementById('totalLine');
+  tl.textContent = doneCount? ('Total so far: '+total+' / '+max+'  ('+doneCount+'/3 units done)') : '';
+}
+
+function startUnit(n){
+  current.unit=n; current.answers=new Array(UNITS[n].questions.length).fill(null);
+  document.getElementById('quizTitle').textContent=UNITS[n].title;
+  document.getElementById('quizWho').textContent=current.student;
+  const box=document.getElementById('questions'); box.innerHTML='';
+  UNITS[n].questions.forEach((q,i)=>{
+    const d=document.createElement('div'); d.className='q'; d.id='q'+i;
+    let inner='<div class="q-num">Question '+(i+1)+'</div><div class="q-text">'+q.q+'</div>';
+    if(q.type==='mc'){
+      inner+='<div class="opts">';
+      q.options.forEach((o,oi)=>{ inner+='<div class="opt" onclick="pick('+i+','+oi+',this)">'+o+'</div>'; });
+      inner+='</div>';
+    } else {
+      inner+='<input class="fill" id="in'+i+'" oninput="typeAns('+i+',this.value)" placeholder="type here...">';
+    }
+    d.innerHTML=inner; box.appendChild(d);
+  });
+  document.getElementById('submitBtn').classList.remove('hidden');
+  show('quiz'); window.scrollTo(0,0);
+}
+function pick(qi,oi,el){
+  current.answers[qi]=UNITS[current.unit].questions[qi].options[oi];
+  el.parentNode.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function typeAns(qi,val){ current.answers[qi]=val; }
+
+function isCorrect(q,ans){
+  if(ans===null||ans===undefined) return false;
+  if(q.type==='mc') return ans===q.answer;
+  const norm = String(ans).trim().toLowerCase().replace(/[.!?]$/,'');
+  return q.answer.map(a=>a.toLowerCase()).includes(norm);
+}
+
+function submitQuiz(){
+  const qs=UNITS[current.unit].questions;
+  let score=0;
+  qs.forEach((q,i)=>{ if(isCorrect(q,current.answers[i])) score++; });
+  current.lastScore=score;
+  // save
+  const s=store(); s[current.student]=s[current.student]||{}; s[current.student][current.unit]=score; saveStore(s);
+  // running total
+  let total=0,max=0; Object.keys(UNITS).forEach(n=>{ if(s[current.student][n]!==undefined){ total+=s[current.student][n]; max+=UNITS[n].questions.length; }});
+  // show result
+  const pct=Math.round(score/qs.length*100);
+  document.getElementById('resultScore').textContent=score+' / '+qs.length;
+  const starN=Math.max(1,Math.round(score/qs.length*5));
+  document.getElementById('resultStars').textContent='⭐'.repeat(starN)+'☆'.repeat(5-starN);
+  let msg = pct>=80?'Amazing work! 🏆' : pct>=50?'Good job! Keep practising. 💪' : 'Nice try! Let’s practise again. 🌱';
+  document.getElementById('resultMsg').textContent=msg;
+  show('result'); window.scrollTo(0,0);
+  sendResult(score,qs.length,total,max);
+}
+
+function sendResult(score,outOf,total,max){
+  const status=document.getElementById('emailStatus');
+  if(FORMSPREE_ENDPOINT.includes('YOUR_FORM_ID')){
+    status.textContent='ℹ️ Email not set up yet (see SETUP note in the file). Score is saved on screen.';
+    return;
+  }
+  status.textContent='📨 Sending your result...';
+  fetch(FORMSPREE_ENDPOINT,{
+    method:'POST', headers:{'Accept':'application/json','Content-Type':'application/json'},
+    body:JSON.stringify({
+      _subject:'English Portal result — '+current.student+' (Unit '+current.unit+')',
+      Student:current.student,
+      Unit:current.unit,
+      Unit_Score:score+' / '+outOf,
+      Total_Mark_So_Far:total+' / '+max,
+      Teacher:TEACHER_EMAIL,
+      Submitted:new Date().toLocaleString()
+    })
+  }).then(r=>{ status.textContent = r.ok ? '✅ Result sent to your teacher!' : '⚠️ Could not send email (check Formspree setup).'; })
+   .catch(()=>{ status.textContent='⚠️ No internet — email not sent. Score is still saved.'; });
+}
+
+function reviewAnswers(){
+  show('quiz');
+  document.getElementById('submitBtn').classList.add('hidden');
+  const qs=UNITS[current.unit].questions;
+  qs.forEach((q,i)=>{
+    const d=document.getElementById('q'+i);
+    const ok=isCorrect(q,current.answers[i]);
+    d.classList.add(ok?'correct':'wrong');
+    let note='<div class="answer-note">';
+    note += ok ? '<span class="mark ok">✔ Correct!</span>'
+               : '<span class="mark no">✘ Your answer: '+(current.answers[i]||'(blank)')+'</span> — Correct answer: <b>'+(q.type==='mc'?q.answer:q.answer[0])+'</b>';
+    note+='</div>';
+    d.insertAdjacentHTML('beforeend',note);
+    d.querySelectorAll('.opt').forEach(o=>o.style.pointerEvents='none');
+    const inp=d.querySelector('input'); if(inp){inp.value=current.answers[i]||''; inp.disabled=true;}
+  });
+  window.scrollTo(0,0);
+}
+function backToMenu(){ show('menu'); renderUnits(); }
+
+function show(id){
+  ['login','menu','quiz','result'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+load();
+</script>
+</body>
+</html>
